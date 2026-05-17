@@ -1,4 +1,3 @@
-package modelo.carta;
 public abstract class Carta {
 
     protected String nombre;

@@ -42,7 +42,7 @@ cd MINI-PROYECTO-2
 Mecánica del juego
 Inicio
 -
-Se ingresan los nombres de los jugadores, se genera un conjunto de cartas (monstruos y mágicas), se reparten 25 cartas a cada jugador, cada jugador roba 5 cartas iniciales y se selecciona aleatoriamente quién comienza.
+Se ingresan los nombres de los jugadores, se genera un conjunto de cartas (monstruos y mágicas), se reparten 20 cartas a cada jugador, cada jugador roba 5 cartas iniciales y se selecciona aleatoriamente quién comienza.
 
 
  Turno de juego

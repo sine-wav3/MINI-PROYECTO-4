@@ -1,6 +1,3 @@
-package modelo.carta;
-
-import modelo.juego.Jugador;
 
 public class Raigeki extends Magica{
     public Raigeki(){

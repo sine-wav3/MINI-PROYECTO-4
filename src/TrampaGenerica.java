@@ -1,5 +1,3 @@
-package modelo.carta;
-import modelo.juego.Jugador;
 
 public class TrampaGenerica extends Carta implements Activable {
     

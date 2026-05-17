@@ -1,5 +1,3 @@
-package modelo.carta;
-import modelo.juego.Jugador;
 
 public class PotOfGreed extends Magica {
 
