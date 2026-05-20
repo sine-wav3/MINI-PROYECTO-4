@@ -1,13 +1,12 @@
 package vista;
 
+import controlador.JuegoControlador;
 import java.awt.*;
 import java.util.List;
 import javax.swing.*;
-
-import controlador.JuegoControlador;
-import modelo.juego.Jugador;
 import modelo.carta.Carta;
 import modelo.carta.Monstruo;
+import modelo.juego.Jugador;
 
 public class VentanaYuGiOh extends JFrame implements VistaJuego {
 
@@ -52,6 +51,8 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
     public void actualizar(Jugador j1, Jugador j2, boolean turnoJ1) {
         lpJ1.setText("❤️ " + j1.getLp());
         lpJ2.setText("❤️ " + j2.getLp());
+        revalidate();
+        repaint();
 
         if (j1.getLp() < 2000) { lpJ1.setForeground(Color.RED); lpJ1.setFont(new Font("Monospaced", Font.BOLD, 32)); }
         else                   { lpJ1.setForeground(new Color(255, 80, 80)); lpJ1.setFont(new Font("Monospaced", Font.BOLD, 28)); }
@@ -248,7 +249,7 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
         panelMano = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
         panelMano.setBorder(BorderFactory.createTitledBorder("MANO ACTUAL"));
         panelMano.setPreferredSize(new Dimension(1000, 120));
-        add(panelMano, BorderLayout.SOUTH);
+        //add(panelMano, BorderLayout.SOUTH);
 
         areaLog = new JTextArea();
         areaLog.setEditable(false);
@@ -257,7 +258,13 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
         areaLog.setFont(new Font("Monospaced", Font.PLAIN, 12));
         JScrollPane scrollLog = new JScrollPane(areaLog);
         scrollLog.setPreferredSize(new Dimension(1000, 150));
-        add(scrollLog, BorderLayout.AFTER_LAST_LINE);
+        JPanel panelInferior = new JPanel(new BorderLayout());
+        panelInferior.add(panelMano, BorderLayout.NORTH);
+        panelInferior.add(scrollLog, BorderLayout.CENTER);
+
+        add(panelInferior, BorderLayout.SOUTH);
+
+        //add(scrollLog, BorderLayout.AFTER_LAST_LINE);
 
         JPanel panelBotones = new JPanel(new GridLayout(4, 1, 10, 10));
         panelBotones.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));

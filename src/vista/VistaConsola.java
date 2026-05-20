@@ -1,8 +1,8 @@
 package vista;
 
-import modelo.juego.Jugador;
 import controlador.JuegoControlador;
 import java.util.Scanner;
+import modelo.juego.Jugador;
 
 public class VistaConsola implements VistaJuego {
 
