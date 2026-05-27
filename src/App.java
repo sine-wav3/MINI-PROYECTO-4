@@ -13,5 +13,8 @@ public class App {
         SwingUtilities.invokeLater(() ->
             new VentanaYuGiOh(controlador).setVisible(true)
         );
+
+        // Hilo principal maneja la terminal; no puedo creer que se me pasó ESTA línea 
+        consola.iniciar();
     }
 }
