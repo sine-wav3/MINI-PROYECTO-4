@@ -9,6 +9,20 @@
             "name": "App",
             "request": "launch",
             "mainClass": "App",
+            "projectName": "MINI-PROYECTO-3_edaa35da"
+        },
+        {
+            "type": "java",
+            "name": "App",
+            "request": "launch",
+            "mainClass": "controlador.App",
+            "projectName": "MINI-PROYECTO-3_edaa35da"
+        },
+        {
+            "type": "java",
+            "name": "App",
+            "request": "launch",
+            "mainClass": "App",
             "projectName": "MINI-PROYECTO-2_edaa35d9"
         },
         {
