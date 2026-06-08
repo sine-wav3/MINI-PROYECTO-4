@@ -1,5 +1,6 @@
 package controlador;
 
+import modelo.memento.JuegoMemento;
 import java.util.*;
 import modelo.juego.Jugador;
 import modelo.carta.Carta;
@@ -23,15 +24,90 @@ public class JuegoControlador {
     private Jugador j1, j2;
     private boolean turnoJ1;
 
+    private JuegoMemento ultimoEstado;
     private boolean haRobadoEsteTurno      = false;
     private boolean haJugadoCartaEsteTurno = false;
     private boolean haAtacadoEsteTurno     = false;
     private boolean primerTurnoRealizado   = false;
+    private Queue<String> eventos = new LinkedList<>();
+    private Set<String> cartasUtilizadas =
+        new HashSet<>();
 
     private List<VistaJuego> vistas = new ArrayList<>();
 
     public JuegoControlador() {
         inicializarJuego();
+    }
+    ////////////////////////////////////////
+    public void guardarPartida() {
+
+        ultimoEstado = new JuegoMemento(
+            j1.getLp(),
+            j2.getLp(),
+            turnoJ1,
+            j1.getMano(),
+            j2.getMano(),
+            j1.getCampo(),
+            j2.getCampo()
+        );
+
+        notificarMensaje("Partida guardada.");
+    }
+
+    public void cargarPartida() {
+
+        if (ultimoEstado == null) {
+            notificarMensaje(
+                "No hay partida guardada."
+            );
+            return;
+        }
+
+        j1.setLp(
+            ultimoEstado.getLpJ1()
+        );
+
+        j2.setLp(
+            ultimoEstado.getLpJ2()
+        );
+
+        j1.setMano(
+            ultimoEstado.getManoJ1()
+        );
+
+        j2.setMano(
+            ultimoEstado.getManoJ2()
+        );
+
+        j1.setCampo(
+            ultimoEstado.getCampoJ1()
+        );
+
+        j2.setCampo(
+            ultimoEstado.getCampoJ2()
+        );
+
+        turnoJ1 =
+            ultimoEstado.isTurnoJ1();
+
+        notificarVistas();
+        notificarMensaje(
+            "Partida restaurada."
+        );
+    }
+
+    /////////////////////////////////// Para la parte de guardar y cargar partidas
+
+    private void registrarEvento(String evento) {
+        eventos.offer(evento);
+
+        if (eventos.size() > 50) {
+            eventos.poll();
+        }
+    }
+
+    public Queue<String> getEventos() {
+        return eventos;
     }
 
     public void agregarVista(VistaJuego vista) {
@@ -117,6 +193,9 @@ public class JuegoControlador {
         if (index < 0 || index >= actual.getMano().size()) return;
 
         Carta carta = actual.getMano().get(index);
+
+        cartasUtilizadas.add(  //se modifica esto para el diseño de memento, se guarda el nombre de la carta que se jugp    
+            carta.getNombre());
 
         if (carta instanceof Monstruo) {
             Monstruo m = (Monstruo) carta;
@@ -249,9 +328,19 @@ public class JuegoControlador {
     }
 
     private void notificarVistas()            { for (VistaJuego v : vistas) v.actualizar(j1, j2, turnoJ1); }
-    private void notificarMensaje(String msg) { for (VistaJuego v : vistas) v.mostrarMensaje(msg); }
+    private void notificarMensaje(String msg) { //se modifica esto para que la queue almacene el historial
+        registrarEvento(msg);
+        for (VistaJuego v : vistas) {
+            v.mostrarMensaje(msg);
+        }
+    }
     private void notificarGanador(String n)   { for (VistaJuego v : vistas) v.mostrarGanador(n); }
 
     public Jugador getActual()   { return turnoJ1 ? j1 : j2; }
     public Jugador getOponente() { return turnoJ1 ? j2 : j1; }
+    
+    public Set<String> getCartasUtilizadas() {
+        return cartasUtilizadas;
+    }
+
 }
