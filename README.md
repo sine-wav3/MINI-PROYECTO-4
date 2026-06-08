@@ -6,7 +6,7 @@
 
 
  Yu-Gi-Oh! 
-Mini Proyecto 2 – Programación Orientada a Eventos (Java)
+Mini Proyecto 3 – Programación Orientada a Eventos (Java)
 -
 
 
@@ -31,7 +31,7 @@ Consola (CMD, PowerShell, terminal Linux o Mac)<br>
 git clone <https://github.com/sine-wav3/MINI-PROYECTO-1.git>
 
 2. Acceder al proyecto:
-cd MINI-PROYECTO-2
+cd MINI-PROYECTO-3
 
 3. Compilar los archivos en un Entorno de Desarrollo Integrado (IDE) como Visual Studio.
 
