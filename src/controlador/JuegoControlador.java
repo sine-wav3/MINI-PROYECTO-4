@@ -118,6 +118,10 @@ public class JuegoControlador {
         vistas.add(vista);
     }
 
+    public void refrescarVistas() {
+        notificarVistas();
+    }
+
     private void inicializarJuego() {
         List<Carta> pool = new ArrayList<>();
 
