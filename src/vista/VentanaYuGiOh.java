@@ -266,33 +266,43 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
 
         //add(scrollLog, BorderLayout.AFTER_LAST_LINE);
 
-        JPanel panelBotones = new JPanel(new GridLayout(4, 1, 10, 10));
+        JPanel panelBotones = new JPanel(new GridLayout(6, 1, 10, 10));
         panelBotones.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JButton btnJugar = new JButton("JUGAR CARTA");
-        btnAtacar        = new JButton("ATACAR");
-        btnCambiarModo   = new JButton("CAMBIAR MODO");
-        btnPasar         = new JButton("PASAR TURNO");
+        JButton btnJugar   = new JButton("JUGAR CARTA");
+        btnAtacar          = new JButton("ATACAR");
+        btnCambiarModo     = new JButton("CAMBIAR MODO");
+        btnPasar           = new JButton("PASAR TURNO");
+        JButton btnGuardar = new JButton("GUARDAR PARTIDA");
+        JButton btnCargar  = new JButton("CARGAR PARTIDA");
 
         btnJugar.setFont(new Font("Arial", Font.BOLD, 14));
         btnAtacar.setFont(new Font("Arial", Font.BOLD, 14));
         btnCambiarModo.setFont(new Font("Arial", Font.BOLD, 14));
         btnPasar.setFont(new Font("Arial", Font.BOLD, 14));
+        btnGuardar.setFont(new Font("Arial", Font.BOLD, 14));
+        btnCargar.setFont(new Font("Arial", Font.BOLD, 14));
 
         btnJugar.setBackground(new Color(200, 220, 255));
         btnAtacar.setBackground(new Color(255, 200, 200));
         btnCambiarModo.setBackground(new Color(200, 255, 200));
         btnPasar.setBackground(new Color(255, 255, 200));
+        btnGuardar.setBackground(new Color(180, 255, 220));
+        btnCargar.setBackground(new Color(220, 180, 255));
 
         btnJugar.addActionListener(e -> accionJugarCarta());
         btnAtacar.addActionListener(e -> accionAtacar());
         btnCambiarModo.addActionListener(e -> accionCambiarModo());
         btnPasar.addActionListener(e -> controlador.onPasarTurno());
+        btnGuardar.addActionListener(e -> controlador.onGuardar());
+        btnCargar.addActionListener(e -> controlador.onCargar());
 
         panelBotones.add(btnJugar);
         panelBotones.add(btnAtacar);
         panelBotones.add(btnCambiarModo);
         panelBotones.add(btnPasar);
+        panelBotones.add(btnGuardar);
+        panelBotones.add(btnCargar);
         add(panelBotones, BorderLayout.EAST);
     }
 }

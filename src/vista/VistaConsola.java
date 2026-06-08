@@ -52,7 +52,7 @@ public class VistaConsola implements VistaJuego {
         return Integer.parseInt(sc.nextLine().trim());
     }
 
-    // Aquí podemos jugar en la terminal también, chicos lo siento :(
+    // Aquí podemos jugar en la terminal también.
   
 
     public void iniciar() {
@@ -77,7 +77,7 @@ public class VistaConsola implements VistaJuego {
             System.out.println(i + ". " + c.getNombre() + extra);
         }
 
-        System.out.println("\n1. Jugar carta  2. Atacar  3. Cambiar modo  4. Pasar turno");
+        System.out.println("\n1. Jugar carta  2. Atacar  3. Cambiar modo  4. Pasar turno 5.Guardar partida 6.Cargar partida");
         System.out.print("> ");
 
         switch (sc.nextLine().trim()) {
@@ -85,6 +85,8 @@ public class VistaConsola implements VistaJuego {
             case "2" -> accionAtacar();
             case "3" -> accionCambiarModo();
             case "4" -> controlador.onPasarTurno();
+            case "5" -> controlador.onGuardar();
+            case "6" -> controlador.onCargar();
             default  -> System.out.println("Opción no válida.");
         }
     }
