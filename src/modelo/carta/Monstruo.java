@@ -5,11 +5,18 @@ public class Monstruo extends Carta {
     private int atk;
     private int def;
     private int nivel;
+
     private boolean enAtaque = true;
     private boolean cambioEsteTurno = false;
 
-    public Monstruo(String nombre, int atk, int def, int nivel) {
+    public Monstruo(
+            String nombre,
+            int atk,
+            int def,
+            int nivel) {
+
         super(nombre);
+
         this.atk = atk;
         this.def = def;
         this.nivel = nivel;
@@ -19,8 +26,16 @@ public class Monstruo extends Carta {
         return atk;
     }
 
+    public void setAtk(int atk) {
+        this.atk = atk;
+    }
+
     public int getDef() {
         return def;
+    }
+
+    public void setDef(int def) {
+        this.def = def;
     }
 
     public int getNivel() {
@@ -35,29 +50,20 @@ public class Monstruo extends Carta {
         return !cambioEsteTurno;
     }
 
-    public void setAtk(int atk) {
-        this.atk = atk;
-    }
-
-    public void setDef(int def){
-        this.def = def;
-    }
-
     public void cambiarModo() {
+
         if (!puedeCambiarModo()) {
-            System.out.println("Ya cambiaste el modo este turno");
-        return;
-    }
-    
-    enAtaque = !enAtaque;
-    marcarCambio();
-    System.out.println(getNombre() + " ahora está en " + (enAtaque ? "ataque" : "defensa"));
+            return;
+        }
+
+        enAtaque = !enAtaque;
+        marcarCambio();
     }
 
     public void marcarCambio() {
         cambioEsteTurno = true;
     }
-    
+
     public void resetCambio() {
         cambioEsteTurno = false;
     }

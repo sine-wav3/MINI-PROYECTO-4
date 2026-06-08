@@ -1,4 +1,5 @@
 package modelo.carta;
+
 import modelo.juego.Jugador;
 
 public class PotOfGreed extends Magica {
@@ -9,9 +10,8 @@ public class PotOfGreed extends Magica {
 
     @Override
     public void activar(Jugador jugador, Jugador oponente) {
-        System.out.println("se activo Pot of greed, roba 2 cartas");
+
         jugador.robarCarta();
         jugador.robarCarta();
     }
-    
 }
