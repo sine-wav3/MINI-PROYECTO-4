@@ -1,6 +1,9 @@
 package controlador;
 
 import modelo.memento.JuegoMemento;
+import modelo.persistencia.EstadoCargado;
+import modelo.persistencia.GestorArchivos;  
+import java.io.IOException;
 import java.util.*;
 import modelo.juego.Jugador;
 import modelo.carta.Carta;
@@ -23,7 +26,8 @@ public class JuegoControlador {
 
     private Jugador j1, j2;
     private boolean turnoJ1;
-
+    private int turnosJugados = 0;
+    private final GestorArchivos gestor = new GestorArchivos();
     private JuegoMemento ultimoEstado;
     private boolean haRobadoEsteTurno      = false;
     private boolean haJugadoCartaEsteTurno = false;
@@ -293,6 +297,7 @@ public class JuegoControlador {
         haJugadoCartaEsteTurno = false;
         haAtacadoEsteTurno     = false;
         primerTurnoRealizado   = true;
+        turnosJugados++;
 
         for (Monstruo m : j1.getCampo()) m.resetCambio();
         for (Monstruo m : j2.getCampo()) m.resetCambio();
@@ -319,13 +324,18 @@ public class JuegoControlador {
     }
 
     private void verificarVictoria() {
-        String ganador = null;
-        if (j1.getLp() <= 0)                              ganador = j2.getNombre();
-        else if (j2.getLp() <= 0)                         ganador = j1.getNombre();
-        else if (j1.isMazoVacio() && j1.getMano().isEmpty()) ganador = j2.getNombre();
-        else if (j2.isMazoVacio() && j2.getMano().isEmpty()) ganador = j1.getNombre();
-        if (ganador != null) notificarGanador(ganador);
+    String ganador = null;
+    if (j1.getLp() <= 0) ganador = j2.getNombre();
+    else if (j2.getLp() <= 0) ganador = j1.getNombre();
+    else if (j1.isMazoVacio() && j1.getMano().isEmpty()) ganador = j2.getNombre();
+    else if (j2.isMazoVacio() && j2.getMano().isEmpty()) ganador = j1.getNombre();
+    if (ganador != null) {
+        onFinalizarDuelo(ganador);
+        notificarGanador(ganador);
     }
+}
+
+
 
     private void notificarVistas()            { for (VistaJuego v : vistas) v.actualizar(j1, j2, turnoJ1); }
     private void notificarMensaje(String msg) { //se modifica esto para que la queue almacene el historial
@@ -342,5 +352,86 @@ public class JuegoControlador {
     public Set<String> getCartasUtilizadas() {
         return cartasUtilizadas;
     }
+public void onGuardar() {
+    try {
+        gestor.guardarPartida(
+            j1, j2,
+            turnoJ1, turnosJugados,
+            haRobadoEsteTurno, haJugadoCartaEsteTurno,
+            haAtacadoEsteTurno, primerTurnoRealizado,
+            cartasUtilizadas
+        );
+        notificarMensaje("Partida guardada en archivo.");
+    } catch (IOException e) {
+        notificarMensaje("Error al guardar la partida: " + e.getMessage());
+    }
+}
+
+public boolean onCargar() {
+    try {
+        EstadoCargado estado = gestor.cargarPartida();
+        if (estado == null) {
+            notificarMensaje("No existe partida guardada.");
+            return false;
+        }
+        j1.setLp(estado.getLpJ1());
+        j2.setLp(estado.getLpJ2());
+        j1.setMano(estado.getManoJ1());
+        j2.setMano(estado.getManoJ2());
+        j1.setCampo(estado.getCampoJ1());
+        j2.setCampo(estado.getCampoJ2());
+        if (estado.getMazoJ1() != null) j1.setMazo(estado.getMazoJ1());
+        if (estado.getMazoJ2() != null) j2.setMazo(estado.getMazoJ2());
+        if (estado.getNombreJ1() != null) j1.setNombre(estado.getNombreJ1());
+        if (estado.getNombreJ2() != null) j2.setNombre(estado.getNombreJ2());
+        turnoJ1              = estado.isTurnoJ1();
+        turnosJugados        = estado.getTurnosJugados();
+        haRobadoEsteTurno    = estado.isHaRobado();
+        haJugadoCartaEsteTurno = estado.isHaJugado();
+        haAtacadoEsteTurno   = estado.isHaAtacado();
+        primerTurnoRealizado = estado.isPrimerTurno();
+        if (estado.getCartasUsadas() != null) {
+            cartasUtilizadas.clear();
+            cartasUtilizadas.addAll(estado.getCartasUsadas());
+        }
+        notificarVistas();
+        notificarMensaje("Partida cargada desde archivo.");
+        return true;
+    } catch (IOException e) {
+        notificarMensaje("Error al cargar la partida: " + e.getMessage());
+        return false;
+    }
+}
+
+private void onFinalizarDuelo(String ganador) {
+    notificarMensaje("El duelo ha terminado. Ganador: " + ganador);
+    try {
+        gestor.registrarResultado(
+            j1.getNombre(), j2.getNombre(),
+            ganador, turnosJugados,
+            j1.getLp(), j2.getLp()
+        );
+    } catch (IOException e) {
+        notificarMensaje("Error al guardar estadísticas: " + e.getMessage());
+    }
+}
+
+public String getEstadisticas() {
+    try {
+        return gestor.calcularEstadisticas();
+    } catch (IOException e) {
+        return "No se pudieron leer las estadísticas: " + e.getMessage();
+    }
+}
+
+public boolean existePartidaGuardada() {
+    return gestor.existePartidaGuardada();
+}
+
+public int getTurnosJugados() {
+    return turnosJugados;
+}
+
+
 
 }

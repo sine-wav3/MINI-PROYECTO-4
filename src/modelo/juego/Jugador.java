@@ -78,4 +78,8 @@ public class Jugador {
         this.campo.clear();
         this.campo.addAll(campo);
     }
+
+    public void setMazo(Stack<Carta> mazo) {
+        this.mazo = mazo;
+    }
 }
