@@ -40,7 +40,7 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
         controlador.setNombres(n1, n2);
 
         crearInterfaz();
-        controlador.onRobar();
+        controlador.refrescarVistas();
     }
 
     // -------------------------------------------------------
@@ -97,11 +97,16 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
 
         panelMano.removeAll();
         Jugador actual = controlador.getActual();
-        for (int i = 0; i < actual.getMano().size(); i++) {
-            Carta c = actual.getMano().get(i);
-            JButton btn = new JButton(c.getNombre());
+        List<Carta> mano = actual.getMano();
+        for (int i = 0; i < mano.size(); i++) {
+            Carta c = mano.get(i);
+            String detalle = (c instanceof Monstruo m)
+                ? "<html><center>" + c.getNombre() + "<br>Nv." + m.getNivel() + " ATK:" + m.getAtk() + "</center></html>"
+                : "<html><center>" + c.getNombre() + "<br>[Magia/Trampa]</center></html>";
+            JButton btn = new JButton(detalle);
             btn.setFont(new Font("Arial", Font.PLAIN, 11));
             btn.setBackground(new Color(255, 255, 200));
+            btn.setPreferredSize(new Dimension(140, 60));
             final int idx = i;
             btn.addActionListener(e -> controlador.onJugarCarta(idx));
             panelMano.add(btn);
@@ -143,16 +148,29 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
         String[] opciones = new String[actual.getMano().size()];
         for (int i = 0; i < actual.getMano().size(); i++) {
             Carta c = actual.getMano().get(i);
-            opciones[i] = c.getNombre();
-            if (c instanceof Monstruo) {
-                Monstruo m = (Monstruo) c;
-                opciones[i] += " (Nv." + m.getNivel() + " ATK:" + m.getAtk() + " DEF:" + m.getDef() + ")";
+            if (c instanceof Monstruo m) {
+                opciones[i] = c.getNombre() + "  |  Nv." + m.getNivel() +
+                              "  ATK:" + m.getAtk() + "  DEF:" + m.getDef();
+            } else {
+                opciones[i] = c.getNombre() + "  |  [Magia/Trampa]";
             }
         }
-        int sel = JOptionPane.showOptionDialog(this, "Elige una carta:",
-            "Mano de " + actual.getNombre(), JOptionPane.DEFAULT_OPTION,
-            JOptionPane.QUESTION_MESSAGE, null, opciones, null);
-        if (sel >= 0) controlador.onJugarCarta(sel);
+
+        JList<String> lista = new JList<>(opciones);
+        lista.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        lista.setSelectedIndex(0);
+        lista.setFont(new Font("Monospaced", Font.PLAIN, 13));
+        lista.setVisibleRowCount(Math.min(opciones.length, 8));
+        JScrollPane scroll = new JScrollPane(lista);
+        scroll.setPreferredSize(new Dimension(480, lista.getVisibleRowCount() * 28));
+
+        int result = JOptionPane.showConfirmDialog(this, scroll,
+            "Mano de " + actual.getNombre() + " — elige una carta",
+            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result == JOptionPane.OK_OPTION && lista.getSelectedIndex() >= 0) {
+            controlador.onJugarCarta(lista.getSelectedIndex());
+        }
     }
 
     private void accionAtacar() {
@@ -185,15 +203,155 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
 
     private Monstruo elegirMonstruo(List<Monstruo> lista, String titulo, boolean mostrarModo) {
         if (lista.isEmpty()) return null;
-        String[] opciones = new String[lista.size()];
-        for (int i = 0; i < lista.size(); i++) {
-            Monstruo m = lista.get(i);
-            String modo = mostrarModo ? (m.isEnAtaque() ? " [ATK]" : " [DEF]") : "";
-            opciones[i] = m.getNombre() + modo + " (ATK:" + m.getAtk() + " DEF:" + m.getDef() + ")";
+
+        JDialog dialogo = new JDialog(this, titulo, true);
+        dialogo.setLayout(new BorderLayout());
+        dialogo.getContentPane().setBackground(new Color(10, 10, 30));
+
+        // Título del diálogo
+        JLabel lblTitulo = new JLabel(titulo, SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Serif", Font.BOLD, 16));
+        lblTitulo.setForeground(new Color(255, 215, 0)); // dorado
+        lblTitulo.setBorder(BorderFactory.createEmptyBorder(12, 10, 8, 10));
+        lblTitulo.setOpaque(true);
+        lblTitulo.setBackground(new Color(10, 10, 30));
+        dialogo.add(lblTitulo, BorderLayout.NORTH);
+
+        // Panel de cartas
+        JPanel panelCartas = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
+        panelCartas.setBackground(new Color(20, 20, 50));
+        panelCartas.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+
+        Monstruo[] seleccion = {null};
+
+        for (Monstruo m : lista) {
+            boolean esAtaque = m.isEnAtaque();
+            Color fondoCarta  = esAtaque ? new Color(180, 120, 40) : new Color(60, 80, 160);
+            Color bordeColor  = new Color(255, 215, 0);
+
+            JPanel carta = new JPanel(new GridLayout(5, 1, 2, 2));
+            carta.setBackground(fondoCarta);
+            carta.setPreferredSize(new Dimension(160, 200));
+            carta.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(bordeColor, 2),
+                BorderFactory.createEmptyBorder(8, 8, 8, 8)
+            ));
+            carta.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+            JLabel nombre = new JLabel("<html><center>" + m.getNombre() + "</center></html>", SwingConstants.CENTER);
+            nombre.setFont(new Font("Serif", Font.BOLD, 13));
+            nombre.setForeground(Color.WHITE);
+
+            JLabel modo = new JLabel(mostrarModo ? (esAtaque ? "⚔  ATAQUE" : "🛡  DEFENSA") : "", SwingConstants.CENTER);
+            modo.setFont(new Font("Arial", Font.BOLD, 12));
+            modo.setForeground(esAtaque ? new Color(255, 200, 80) : new Color(150, 180, 255));
+
+            JLabel atk = new JLabel("ATK  " + m.getAtk(), SwingConstants.CENTER);
+            atk.setFont(new Font("Monospaced", Font.BOLD, 13));
+            atk.setForeground(new Color(255, 100, 100));
+
+            JLabel def = new JLabel("DEF  " + m.getDef(), SwingConstants.CENTER);
+            def.setFont(new Font("Monospaced", Font.BOLD, 13));
+            def.setForeground(new Color(100, 180, 255));
+
+            JLabel nivel = new JLabel("★".repeat(Math.min(m.getNivel(), 12)), SwingConstants.CENTER);
+            nivel.setFont(new Font("Dialog", Font.PLAIN, 10));
+            nivel.setForeground(new Color(255, 215, 0));
+
+            carta.add(nombre);
+            carta.add(nivel);
+            carta.add(modo);
+            carta.add(atk);
+            carta.add(def);
+
+            carta.addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override public void mouseEntered(java.awt.event.MouseEvent e) {
+                    carta.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(Color.WHITE, 3),
+                        BorderFactory.createEmptyBorder(7, 7, 7, 7)
+                    ));
+                }
+                @Override public void mouseExited(java.awt.event.MouseEvent e) {
+                    carta.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(bordeColor, 2),
+                        BorderFactory.createEmptyBorder(8, 8, 8, 8)
+                    ));
+                }
+                @Override public void mouseClicked(java.awt.event.MouseEvent e) {
+                    seleccion[0] = m;
+                    dialogo.dispose();
+                }
+            });
+
+            panelCartas.add(carta);
         }
-        int idx = JOptionPane.showOptionDialog(this, titulo, "Seleccionar monstruo",
-            JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, opciones, null);
-        return (idx >= 0) ? lista.get(idx) : null;
+
+        JScrollPane scroll = new JScrollPane(panelCartas,
+            JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scroll.setBackground(new Color(20, 20, 50));
+        scroll.setBorder(null);
+        dialogo.add(scroll, BorderLayout.CENTER);
+
+        // Botón cancelar
+        JButton btnCancelar = new JButton("Cancelar");
+        btnCancelar.setBackground(new Color(80, 20, 20));
+        btnCancelar.setForeground(Color.WHITE);
+        btnCancelar.setFont(new Font("Arial", Font.BOLD, 12));
+        btnCancelar.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
+        btnCancelar.addActionListener(e -> dialogo.dispose());
+        JPanel panelSur = new JPanel();
+        panelSur.setBackground(new Color(10, 10, 30));
+        panelSur.add(btnCancelar);
+        dialogo.add(panelSur, BorderLayout.SOUTH);
+
+        dialogo.pack();
+        dialogo.setLocationRelativeTo(this);
+        dialogo.setVisible(true);
+
+        return seleccion[0];
+    }
+
+    private void mostrarEstadisticas() {
+        String datos = controlador.getEstadisticas();
+
+        JTextArea area = new JTextArea(datos);
+        area.setEditable(false);
+        area.setFont(new Font("Monospaced", Font.PLAIN, 13));
+        area.setBackground(new Color(10, 10, 30));
+        area.setForeground(new Color(255, 215, 0));
+        area.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+
+        JScrollPane scroll = new JScrollPane(area);
+        scroll.setPreferredSize(new Dimension(500, 300));
+        scroll.getViewport().setBackground(new Color(10, 10, 30));
+
+        JDialog dialogo = new JDialog(this, "Estadísticas históricas", true);
+        dialogo.setLayout(new BorderLayout());
+        dialogo.getContentPane().setBackground(new Color(10, 10, 30));
+
+        JLabel titulo = new JLabel("HISTORIAL DE DUELOS", SwingConstants.CENTER);
+        titulo.setFont(new Font("Serif", Font.BOLD, 18));
+        titulo.setForeground(new Color(255, 215, 0));
+        titulo.setBorder(BorderFactory.createEmptyBorder(12, 10, 8, 10));
+        titulo.setOpaque(true);
+        titulo.setBackground(new Color(10, 10, 30));
+
+        JButton btnCerrar = new JButton("Cerrar");
+        btnCerrar.setBackground(new Color(80, 20, 20));
+        btnCerrar.setForeground(Color.WHITE);
+        btnCerrar.setFont(new Font("Arial", Font.BOLD, 12));
+        btnCerrar.addActionListener(e -> dialogo.dispose());
+        JPanel sur = new JPanel();
+        sur.setBackground(new Color(10, 10, 30));
+        sur.add(btnCerrar);
+
+        dialogo.add(titulo, BorderLayout.NORTH);
+        dialogo.add(scroll, BorderLayout.CENTER);
+        dialogo.add(sur, BorderLayout.SOUTH);
+        dialogo.pack();
+        dialogo.setLocationRelativeTo(this);
+        dialogo.setVisible(true);
     }
 
     // -------------------------------------------------------
@@ -247,7 +405,7 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
         add(panelCentral, BorderLayout.CENTER);
 
         panelMano = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panelMano.setBorder(BorderFactory.createTitledBorder("MANO ACTUAL"));
+        panelMano.setBorder(BorderFactory.createTitledBorder("MANO — haz clic en una carta para jugarla"));
         panelMano.setPreferredSize(new Dimension(1000, 120));
         //add(panelMano, BorderLayout.SOUTH);
 
@@ -269,40 +427,40 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
         JPanel panelBotones = new JPanel(new GridLayout(6, 1, 10, 10));
         panelBotones.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JButton btnJugar   = new JButton("JUGAR CARTA");
-        btnAtacar          = new JButton("ATACAR");
-        btnCambiarModo     = new JButton("CAMBIAR MODO");
-        btnPasar           = new JButton("PASAR TURNO");
-        JButton btnGuardar = new JButton("GUARDAR PARTIDA");
-        JButton btnCargar  = new JButton("CARGAR PARTIDA");
+        btnAtacar               = new JButton("ATACAR");
+        btnCambiarModo          = new JButton("CAMBIAR MODO");
+        btnPasar                = new JButton("PASAR TURNO");
+        JButton btnGuardar      = new JButton("GUARDAR PARTIDA");
+        JButton btnCargar       = new JButton("CARGAR PARTIDA");
+        JButton btnEstadisticas = new JButton("ESTADÍSTICAS");
 
-        btnJugar.setFont(new Font("Arial", Font.BOLD, 14));
         btnAtacar.setFont(new Font("Arial", Font.BOLD, 14));
         btnCambiarModo.setFont(new Font("Arial", Font.BOLD, 14));
         btnPasar.setFont(new Font("Arial", Font.BOLD, 14));
         btnGuardar.setFont(new Font("Arial", Font.BOLD, 14));
         btnCargar.setFont(new Font("Arial", Font.BOLD, 14));
+        btnEstadisticas.setFont(new Font("Arial", Font.BOLD, 14));
 
-        btnJugar.setBackground(new Color(200, 220, 255));
         btnAtacar.setBackground(new Color(255, 200, 200));
         btnCambiarModo.setBackground(new Color(200, 255, 200));
         btnPasar.setBackground(new Color(255, 255, 200));
         btnGuardar.setBackground(new Color(180, 255, 220));
         btnCargar.setBackground(new Color(220, 180, 255));
+        btnEstadisticas.setBackground(new Color(255, 220, 150));
 
-        btnJugar.addActionListener(e -> accionJugarCarta());
         btnAtacar.addActionListener(e -> accionAtacar());
         btnCambiarModo.addActionListener(e -> accionCambiarModo());
         btnPasar.addActionListener(e -> controlador.onPasarTurno());
         btnGuardar.addActionListener(e -> controlador.onGuardar());
         btnCargar.addActionListener(e -> controlador.onCargar());
+        btnEstadisticas.addActionListener(e -> mostrarEstadisticas());
 
-        panelBotones.add(btnJugar);
         panelBotones.add(btnAtacar);
         panelBotones.add(btnCambiarModo);
         panelBotones.add(btnPasar);
         panelBotones.add(btnGuardar);
         panelBotones.add(btnCargar);
+        panelBotones.add(btnEstadisticas);
         add(panelBotones, BorderLayout.EAST);
     }
 }
