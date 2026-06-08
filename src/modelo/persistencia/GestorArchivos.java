@@ -308,10 +308,8 @@ public class GestorArchivos {
         return m;
     }
 
-    // -------------------------------------------------------
+    
     // UTILIDAD
-    // -------------------------------------------------------
-
     public boolean existePartidaGuardada() {
         return new File(ARCHIVO_PARTIDA).exists();
     }

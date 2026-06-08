@@ -137,41 +137,7 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
             null, opciones, null);
     }
 
-    // -------------------------------------------------------
     // Acciones — solo recogen input y delegan al controlador
-    // -------------------------------------------------------
-
-    private void accionJugarCarta() {
-        Jugador actual = controlador.getActual();
-        if (actual.getMano().isEmpty()) { mostrarMensaje("No tienes cartas en mano."); return; }
-
-        String[] opciones = new String[actual.getMano().size()];
-        for (int i = 0; i < actual.getMano().size(); i++) {
-            Carta c = actual.getMano().get(i);
-            if (c instanceof Monstruo m) {
-                opciones[i] = c.getNombre() + "  |  Nv." + m.getNivel() +
-                              "  ATK:" + m.getAtk() + "  DEF:" + m.getDef();
-            } else {
-                opciones[i] = c.getNombre() + "  |  [Magia/Trampa]";
-            }
-        }
-
-        JList<String> lista = new JList<>(opciones);
-        lista.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        lista.setSelectedIndex(0);
-        lista.setFont(new Font("Monospaced", Font.PLAIN, 13));
-        lista.setVisibleRowCount(Math.min(opciones.length, 8));
-        JScrollPane scroll = new JScrollPane(lista);
-        scroll.setPreferredSize(new Dimension(480, lista.getVisibleRowCount() * 28));
-
-        int result = JOptionPane.showConfirmDialog(this, scroll,
-            "Mano de " + actual.getNombre() + " — elige una carta",
-            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-
-        if (result == JOptionPane.OK_OPTION && lista.getSelectedIndex() >= 0) {
-            controlador.onJugarCarta(lista.getSelectedIndex());
-        }
-    }
 
     private void accionAtacar() {
         Jugador atacante = controlador.getActual();
