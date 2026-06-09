@@ -143,6 +143,7 @@ public class JuegoControlador {
                 atk, def, nivel));
         }
 
+        // 10 mágicas + 10 trampas = 20 cartas especiales → total pool 50 (MP2 RF1)
         pool.add(new PotOfGreed());      pool.add(new PotOfGreed());
         pool.add(new BoostAtk());        pool.add(new AcesCoup());
         pool.add(new DarkHole());        pool.add(new Hinotama());
@@ -207,7 +208,7 @@ public class JuegoControlador {
 
         if (carta instanceof Monstruo) {
             Monstruo m = (Monstruo) carta;
-            int necesarios = m.getNivel() >= 7 ? 2 : m.getNivel() >= 4 ? 1 : 0;
+            int necesarios = m.getNivel() >= 7 ? 2 : m.getNivel() >= 5 ? 1 : 0;
 
             if (necesarios > 0) {
                 if (actual.getCampo().size() < necesarios) {

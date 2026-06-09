@@ -1,21 +1,21 @@
 TURNO_J1=true
-TURNO_NUM=29
+TURNO_NUM=18
 HA_ROBADO=true
-HA_JUGADO=false
-HA_ATACADO=false
+HA_JUGADO=true
+HA_ATACADO=true
 PRIMER_TURNO=true
-CARTAS_USADAS=Pot of Greed,Change of Heart,Cyber Dragon 18,Elemental HERO 19,Neo-Spacian 20,Morphing Jar 13,Sakuretsu Armor,Sangan 14,Zombie Master 23,Standar Of Courage,Curse of Dragon 6,Blue-Eyes 4,Gaia 7,Vampire Lord 22,Dark hole,Typhoon Of Magical Space,Insect Queen 12,Dragón Blanco 2,Mago Oscuro 1,Hinotama,Exodia 3,Kuriboh 16,Celestia 27,Witch of the Black Forest 15,Boost ATK +500,Gorz 30,Dark Magician Girl 10,Lyla 25,Man-Eater Bug 17,Celtic Guardian 9,Mirror Force,Jinzo 11,Aces Coup
+CARTAS_USADAS=Gravekeeper's 21,Change of Heart,Raigeki,Elemental HERO 19,Morphing Jar 13,Sakuretsu Armor,Blue-Eyes 4,Curse of Dragon 6,Gaia 7,Dark hole,Typhoon Of Magical Space,Ryko 24,Dragón Blanco 2,Hinotama,Judgment Dragon 26,Kuriboh 16,Celestia 27,Witch of the Black Forest 15,Boost ATK +500,Dark Magician Girl 10,Lyla 25,Mirror Force,Red-Eyes 5,Jinzo 11,Aces Coup
 
 JUGADOR=J1
 NOMBRE=Yugi Muto
-LP=2440
-MANO=M|Elemental HERO 19|1940|1580|7|ATK|false ; M|Gaia 7|980|860|7|ATK|false ; M|Neo-Spacian 20|2020|1640|8|ATK|false ; M|Celtic Guardian 9|1140|980|9|ATK|false ; M|Vampire Lord 22|2180|1760|10|ATK|false ; M|Curse of Dragon 6|900|800|6|ATK|false ; M|Gorz 30|2820|2240|6|ATK|false ; M|Insect Queen 12|1380|1160|12|ATK|false ; M|Blue-Eyes 4|740|680|4|ATK|false
-CAMPO=
-MAZO=M|Wulf 28|2660|2120|4|ATK|false ; M|Ryko 24|2340|1880|12|ATK|false ; M|Ehren 29|2740|2180|5|ATK|false
+LP=1020
+MANO=M|Mago Oscuro 1|500|500|1|ATK|false ; M|Elemental HERO 19|1940|1580|7|ATK|false ; M|Ryko 24|2340|1880|12|ATK|false ; S|Sakuretsu Armor ; M|Curse of Dragon 6|900|800|6|ATK|false
+CAMPO=M|Witch of the Black Forest 15|1620|1340|3|ATK|false
+MAZO=M|Celtic Guardian 9|1140|980|9|ATK|false ; M|Gorz 30|2820|2240|6|ATK|false ; S|Mirror Force ; M|Neo-Spacian 20|2020|1640|8|ATK|false ; M|Zombie Master 23|2260|1820|11|ATK|false ; M|Man-Eater Bug 17|1780|1460|5|ATK|false ; S|Sakuretsu Armor ; M|Insect Queen 12|1380|1160|12|ATK|false ; M|Sangan 14|1540|1280|2|ATK|false ; S|Standar Of Courage
 
 JUGADOR=J2
 NOMBRE=Seto Kaiba
-LP=1460
-MANO=M|Dark Magician Girl 10|1220|1040|10|ATK|false ; M|Jinzo 11|1300|1100|11|ATK|false ; M|Zombie Master 23|2260|1820|11|ATK|false ; M|Cyber Dragon 18|1860|1520|6|ATK|false ; M|Gravekeeper's 21|2100|1700|9|ATK|false ; M|Summoned Skull 8|1060|920|8|ATK|false ; M|Judgment Dragon 26|2500|2000|2|ATK|false ; S|Raigeki ; S|Sakuretsu Armor
+LP=1160
+MANO=M|Jinzo 11|1300|1100|11|ATK|false ; M|Gaia 7|980|860|7|ATK|false ; M|Dark Magician Girl 10|1220|1040|10|ATK|false ; M|Gravekeeper's 21|2100|1700|9|ATK|false ; S|Sakuretsu Armor ; S|Pot of Greed ; M|Ehren 29|2740|2180|5|ATK|false
 CAMPO=
-MAZO=M|Red-Eyes 5|820|740|5|ATK|false
+MAZO=S|Mirror Force ; S|Mirror Force ; S|Mirror Force ; M|Cyber Dragon 18|1860|1520|6|ATK|false ; M|Vampire Lord 22|2180|1760|10|ATK|false ; S|Pot of Greed ; M|Exodia 3|660|620|3|ATK|false ; M|Summoned Skull 8|1060|920|8|ATK|false ; M|Wulf 28|2660|2120|4|ATK|false
