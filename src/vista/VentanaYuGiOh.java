@@ -13,16 +13,58 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
     private JuegoControlador controlador;
 
     private JTextArea areaLog;
-    private JLabel lpJ1, lpJ2;
+    private PanelVida vidaJ1, vidaJ2;
     private JPanel panelCampoJ1, panelCampoJ2;
     private JPanel panelMano;
     private JButton btnAtacar, btnPasar, btnCambiarModo;
 
     private String nombreJ1, nombreJ2;
 
+    // Panel que pinta el fondo de salud proporcional a los LP
+    private static class PanelVida extends JPanel {
+        private int lp;
+        private static final int MAX = 8000;
+        private final JLabel lbl;
+
+        PanelVida() {
+            lp = MAX;
+            setLayout(new BorderLayout());
+            setOpaque(false);
+            lbl = new JLabel("❤️ " + MAX, SwingConstants.CENTER);
+            lbl.setFont(new Font("Monospaced", Font.BOLD, 28));
+            lbl.setForeground(new Color(255, 80, 80));
+            add(lbl, BorderLayout.CENTER);
+        }
+
+        void setLp(int nuevoLp) {
+            lp = Math.max(nuevoLp, 0);
+            lbl.setText("❤️ " + lp);
+            repaint();
+        }
+
+        void setActivo(boolean activo) {
+            lbl.setForeground(activo ? new Color(255, 120, 120) : new Color(200, 60, 60));
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            int w = getWidth(), h = getHeight();
+            // fondo oscuro
+            g.setColor(new Color(20, 20, 40));
+            g.fillRect(0, 0, w, h);
+            // relleno de salud
+            int fill = (int)((double) lp / MAX * w);
+            Color color = lp > MAX / 2 ? new Color(55, 148, 70)
+                        : lp > MAX / 4 ? new Color(160, 120, 0)
+                        : new Color(148, 35, 35);
+            g.setColor(color);
+            g.fillRect(0, 0, fill, h);
+        }
+    }
+
     public VentanaYuGiOh(JuegoControlador controlador) {
         this.controlador = controlador;
-        controlador.agregarVista(this);
 
         setTitle("Yu-Gi-Oh - Duelo De Cartas");
         setSize(1000, 750);
@@ -40,58 +82,28 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
         controlador.setNombres(n1, n2);
 
         crearInterfaz();
+        // agregarVista DESPUÉS de crearInterfaz para que areaLog nunca sea null
+        controlador.agregarVista(this);
         controlador.refrescarVistas();
     }
 
-    // -------------------------------------------------------
+   
     // VistaJuego
-    // -------------------------------------------------------
 
     @Override
     public void actualizar(Jugador j1, Jugador j2, boolean turnoJ1) {
-        lpJ1.setText("❤️ " + j1.getLp());
-        lpJ2.setText("❤️ " + j2.getLp());
-        revalidate();
-        repaint();
-
-        if (j1.getLp() < 2000) { lpJ1.setForeground(Color.RED); lpJ1.setFont(new Font("Monospaced", Font.BOLD, 32)); }
-        else                   { lpJ1.setForeground(new Color(255, 80, 80)); lpJ1.setFont(new Font("Monospaced", Font.BOLD, 28)); }
-        if (j2.getLp() < 2000) { lpJ2.setForeground(Color.RED); lpJ2.setFont(new Font("Monospaced", Font.BOLD, 32)); }
-        else                   { lpJ2.setForeground(new Color(255, 80, 80)); lpJ2.setFont(new Font("Monospaced", Font.BOLD, 28)); }
-
-        if (turnoJ1) {
-            lpJ1.setBackground(new Color(0, 100, 0, 80));
-            lpJ2.setBackground(new Color(0, 0, 0, 100));
-        } else {
-            lpJ1.setBackground(new Color(0, 0, 0, 100));
-            lpJ2.setBackground(new Color(0, 100, 0, 80));
-        }
+        vidaJ1.setLp(j1.getLp());
+        vidaJ2.setLp(j2.getLp());
+        vidaJ1.setActivo(turnoJ1);
+        vidaJ2.setActivo(!turnoJ1);
 
         panelCampoJ1.removeAll();
-        for (Monstruo m : j1.getCampo()) {
-            JLabel lbl = new JLabel(m.getNombre() +
-                " [" + (m.isEnAtaque() ? "ATK" : "DEF") + "] " +
-                m.getAtk() + "/" + m.getDef());
-            lbl.setFont(new Font("Arial", Font.BOLD, 12));
-            lbl.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-            lbl.setOpaque(true);
-            lbl.setBackground(m.isEnAtaque() ? new Color(255, 200, 200) : new Color(200, 200, 255));
-            panelCampoJ1.add(lbl);
-        }
+        for (Monstruo m : j1.getCampo()) panelCampoJ1.add(crearCartaCampo(m));
         panelCampoJ1.revalidate();
         panelCampoJ1.repaint();
 
         panelCampoJ2.removeAll();
-        for (Monstruo m : j2.getCampo()) {
-            JLabel lbl = new JLabel(m.getNombre() +
-                " [" + (m.isEnAtaque() ? "ATK" : "DEF") + "] " +
-                m.getAtk() + "/" + m.getDef());
-            lbl.setFont(new Font("Arial", Font.BOLD, 12));
-            lbl.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-            lbl.setOpaque(true);
-            lbl.setBackground(m.isEnAtaque() ? new Color(255, 200, 200) : new Color(200, 200, 255));
-            panelCampoJ2.add(lbl);
-        }
+        for (Monstruo m : j2.getCampo()) panelCampoJ2.add(crearCartaCampo(m));
         panelCampoJ2.revalidate();
         panelCampoJ2.repaint();
 
@@ -103,9 +115,27 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
             String detalle = (c instanceof Monstruo m)
                 ? "<html><center>" + c.getNombre() + "<br>Nv." + m.getNivel() + " ATK:" + m.getAtk() + "</center></html>"
                 : "<html><center>" + c.getNombre() + "<br>[Magia/Trampa]</center></html>";
-            JButton btn = new JButton(detalle);
+            final Color baseCard = (c instanceof Monstruo)
+                ? new Color(200, 170, 90) : new Color(110, 160, 200);
+            JButton btn = new JButton(detalle) {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setPaint(new GradientPaint(0, 0, baseCard.brighter(), 0, getHeight(), baseCard.darker()));
+                    g2.fillRect(0, 0, getWidth(), getHeight());
+                    g2.dispose();
+                    super.paintComponent(g);
+                }
+            };
+            btn.setBackground(baseCard);
+            btn.setOpaque(false);
+            btn.setContentAreaFilled(false);
+            btn.setFocusPainted(false);
             btn.setFont(new Font("Arial", Font.PLAIN, 11));
-            btn.setBackground(new Color(255, 255, 200));
+            btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createRaisedBevelBorder(),
+                BorderFactory.createEmptyBorder(3, 5, 3, 5)
+            ));
             btn.setPreferredSize(new Dimension(140, 60));
             final int idx = i;
             btn.addActionListener(e -> controlador.onJugarCarta(idx));
@@ -118,6 +148,15 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
     @Override
     public void mostrarMensaje(String mensaje) {
         areaLog.append(mensaje + "\n");
+        // Mantener solo las últimas 15 líneas para no saturar el log
+        String[] lineas = areaLog.getText().split("\n");
+        if (lineas.length > 15) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = lineas.length - 15; i < lineas.length; i++) {
+                sb.append(lineas[i]).append("\n");
+            }
+            areaLog.setText(sb.toString());
+        }
         areaLog.setCaretPosition(areaLog.getDocument().getLength());
     }
 
@@ -324,95 +363,202 @@ public class VentanaYuGiOh extends JFrame implements VistaJuego {
     // Construcción de la interfaz
     // -------------------------------------------------------
 
+    private JPanel crearCartaCampo(Monstruo m) {
+        boolean esAtaque = m.isEnAtaque();
+        Color base = esAtaque ? new Color(140, 50, 50) : new Color(45, 55, 130);
+        JPanel card = new JPanel(new GridLayout(5, 1, 2, 3)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setPaint(new GradientPaint(0, 0, base.brighter(), 0, getHeight(), base.darker()));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        card.setOpaque(false);
+        card.setPreferredSize(new Dimension(155, 195));
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 175, 60), 2),
+            BorderFactory.createEmptyBorder(6, 6, 6, 6)
+        ));
+
+        JLabel nombre = new JLabel("<html><center>" + m.getNombre() + "</center></html>", SwingConstants.CENTER);
+        nombre.setFont(new Font("Serif", Font.BOLD, 13));
+        nombre.setForeground(Color.WHITE);
+
+        JLabel nivel = new JLabel("★".repeat(Math.min(m.getNivel(), 12)), SwingConstants.CENTER);
+        nivel.setFont(new Font("Dialog", Font.PLAIN, 11));
+        nivel.setForeground(new Color(255, 215, 0));
+
+        JLabel modo = new JLabel(esAtaque ? "⚔  ATAQUE" : "🛡  DEFENSA", SwingConstants.CENTER);
+        modo.setFont(new Font("Arial", Font.BOLD, 12));
+        modo.setForeground(esAtaque ? new Color(255, 180, 180) : new Color(150, 180, 255));
+
+        JLabel atk = new JLabel("ATK  " + m.getAtk(), SwingConstants.CENTER);
+        atk.setFont(new Font("Monospaced", Font.BOLD, 12));
+        atk.setForeground(new Color(255, 130, 130));
+
+        JLabel def = new JLabel("DEF  " + m.getDef(), SwingConstants.CENTER);
+        def.setFont(new Font("Monospaced", Font.BOLD, 12));
+        def.setForeground(new Color(130, 185, 255));
+
+        card.add(nombre);
+        card.add(nivel);
+        card.add(modo);
+        card.add(atk);
+        card.add(def);
+        return card;
+    }
+
+    private JButton boton3D(String texto, Color base) {
+        boolean[] pressed = {false};
+        javax.swing.border.Border raised = BorderFactory.createCompoundBorder(
+            BorderFactory.createRaisedBevelBorder(),
+            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        );
+        javax.swing.border.Border lowered = BorderFactory.createCompoundBorder(
+            BorderFactory.createLoweredBevelBorder(),
+            BorderFactory.createEmptyBorder(6, 9, 4, 7)
+        );
+        JButton btn = new JButton(texto) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                Color top = pressed[0] ? base.darker() : base.brighter();
+                Color bot = pressed[0] ? base.brighter() : base.darker();
+                g2.setPaint(new GradientPaint(0, 0, top, 0, getHeight(), bot));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        btn.setBackground(base);
+        btn.setOpaque(false);
+        btn.setContentAreaFilled(false);
+        btn.setFocusPainted(false);
+        btn.setFont(new Font("Arial", Font.BOLD, 14));
+        btn.setBorder(raised);
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override public void mousePressed(java.awt.event.MouseEvent e) {
+                pressed[0] = true;  btn.setBorder(lowered); btn.repaint();
+            }
+            @Override public void mouseReleased(java.awt.event.MouseEvent e) {
+                pressed[0] = false; btn.setBorder(raised);  btn.repaint();
+            }
+        });
+        return btn;
+    }
+
     private void crearInterfaz() {
+        
         JPanel panelLP = new JPanel(new GridLayout(1, 2, 20, 10));
         panelLP.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
-        panelLP.setBackground(new Color(10, 10, 30));
+        panelLP.setBackground(new Color(38, 35, 62));
 
+        // Recuadro J1
         JPanel panelJ1 = new JPanel(new BorderLayout());
-        panelJ1.setBackground(new Color(30, 30, 60));
-        panelJ1.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
-
-        JPanel panelJ2 = new JPanel(new BorderLayout());
-        panelJ2.setBackground(new Color(30, 30, 60));
-        panelJ2.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
-
-        lpJ1 = new JLabel("", SwingConstants.CENTER);
-        lpJ2 = new JLabel("", SwingConstants.CENTER);
-        lpJ1.setFont(new Font("Monospaced", Font.BOLD, 28));
-        lpJ2.setFont(new Font("Monospaced", Font.BOLD, 28));
-        lpJ1.setForeground(new Color(255, 80, 80));
-        lpJ2.setForeground(new Color(255, 80, 80));
-        lpJ1.setOpaque(true); lpJ1.setBackground(new Color(0, 0, 0, 100));
-        lpJ2.setOpaque(true); lpJ2.setBackground(new Color(0, 0, 0, 100));
+        panelJ1.setBorder(BorderFactory.createLineBorder(new Color(195, 185, 235), 2));
 
         JLabel nJ1 = new JLabel(nombreJ1, SwingConstants.CENTER);
-        JLabel nJ2 = new JLabel(nombreJ2, SwingConstants.CENTER);
-        nJ1.setFont(new Font("Arial", Font.BOLD, 16)); nJ1.setForeground(Color.WHITE);
-        nJ2.setFont(new Font("Arial", Font.BOLD, 16)); nJ2.setForeground(Color.WHITE);
-        nJ1.setOpaque(true); nJ1.setBackground(new Color(50, 50, 80));
-        nJ2.setOpaque(true); nJ2.setBackground(new Color(50, 50, 80));
+        nJ1.setFont(new Font("Arial", Font.BOLD, 16));
+        nJ1.setForeground(Color.WHITE);
+        nJ1.setOpaque(true);
+        nJ1.setBackground(new Color(50, 50, 80));
 
-        panelJ1.add(nJ1, BorderLayout.NORTH); panelJ1.add(lpJ1, BorderLayout.CENTER);
-        panelJ2.add(nJ2, BorderLayout.NORTH); panelJ2.add(lpJ2, BorderLayout.CENTER);
-        panelLP.add(panelJ1); panelLP.add(panelJ2);
+        vidaJ1 = new PanelVida();
+        vidaJ1.setPreferredSize(new Dimension(0, 55));
+
+        panelJ1.add(nJ1,    BorderLayout.NORTH);
+        panelJ1.add(vidaJ1, BorderLayout.CENTER);
+
+        // Recuadro J2
+        JPanel panelJ2 = new JPanel(new BorderLayout());
+        panelJ2.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
+
+        JLabel nJ2 = new JLabel(nombreJ2, SwingConstants.CENTER);
+        nJ2.setFont(new Font("Arial", Font.BOLD, 16));
+        nJ2.setForeground(Color.WHITE);
+        nJ2.setOpaque(true);
+        nJ2.setBackground(new Color(50, 50, 80));
+
+        vidaJ2 = new PanelVida();
+        vidaJ2.setPreferredSize(new Dimension(0, 55));
+
+        panelJ2.add(nJ2,    BorderLayout.NORTH);
+        panelJ2.add(vidaJ2, BorderLayout.CENTER);
+
+        panelLP.add(panelJ1);
+        panelLP.add(panelJ2);
         add(panelLP, BorderLayout.NORTH);
 
         JPanel panelCentral = new JPanel(new GridLayout(2, 1, 10, 10));
         panelCampoJ1 = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         panelCampoJ2 = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        panelCampoJ1.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(Color.YELLOW, 2), "CAMPO DE " + nombreJ1));
-        panelCampoJ2.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(Color.YELLOW, 2), "CAMPO DE " + nombreJ2));
-        panelCampoJ1.setBackground(new Color(240, 240, 250));
-        panelCampoJ2.setBackground(new Color(250, 240, 240));
+        javax.swing.border.TitledBorder tbC1 = BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(200, 180, 60), 2), "CAMPO DE " + nombreJ1);
+        tbC1.setTitleColor(new Color(200, 210, 255));
+        panelCampoJ1.setBorder(tbC1);
+        javax.swing.border.TitledBorder tbC2 = BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(200, 180, 60), 2), "CAMPO DE " + nombreJ2);
+        tbC2.setTitleColor(new Color(200, 210, 255));
+        panelCampoJ2.setBorder(tbC2);
+        panelCampoJ1.setBackground(new Color(22, 28, 55));
+        panelCampoJ2.setBackground(new Color(28, 22, 55));
         panelCentral.add(panelCampoJ1); panelCentral.add(panelCampoJ2);
         add(panelCentral, BorderLayout.CENTER);
 
-        panelMano = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
-        panelMano.setBorder(BorderFactory.createTitledBorder("MANO — haz clic en una carta para jugarla"));
-        panelMano.setPreferredSize(new Dimension(1000, 120));
-        //add(panelMano, BorderLayout.SOUTH);
+        panelMano = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
+        panelMano.setBackground(new Color(38, 35, 62));
+        javax.swing.border.TitledBorder tbMano = BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(110, 100, 160), 1),
+            "MANO — haz clic en una carta para jugarla");
+        tbMano.setTitleColor(new Color(190, 180, 225));
+        panelMano.setBorder(tbMano);
+
+        JScrollPane scrollMano = new JScrollPane(panelMano,
+            JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollMano.getViewport().setBackground(new Color(38, 35, 62));
+        scrollMano.setBackground(new Color(38, 35, 62));
+        scrollMano.setBorder(null);
+        scrollMano.setPreferredSize(new Dimension(0, 95));
+        scrollMano.getHorizontalScrollBar().setUnitIncrement(20);
 
         areaLog = new JTextArea();
         areaLog.setEditable(false);
-        areaLog.setBackground(new Color(20, 20, 30));
-        areaLog.setForeground(new Color(100, 255, 100));
-        areaLog.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        JScrollPane scrollLog = new JScrollPane(areaLog);
-        scrollLog.setPreferredSize(new Dimension(1000, 150));
+        areaLog.setBackground(new Color(18, 18, 35));
+        areaLog.setForeground(new Color(170, 210, 255));
+        areaLog.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        areaLog.setMargin(new Insets(8, 12, 8, 12));
+        areaLog.setLineWrap(true);
+        areaLog.setWrapStyleWord(true);
+
+        
+        JScrollPane scrollLog = new JScrollPane(areaLog,
+            JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollLog.setPreferredSize(new Dimension(0, 115));
+        scrollLog.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(80, 75, 120)));
+        scrollLog.getViewport().setBackground(new Color(18, 18, 35));
+
         JPanel panelInferior = new JPanel(new BorderLayout());
-        panelInferior.add(panelMano, BorderLayout.NORTH);
+        panelInferior.add(scrollMano, BorderLayout.NORTH);
         panelInferior.add(scrollLog, BorderLayout.CENTER);
 
         add(panelInferior, BorderLayout.SOUTH);
 
-        //add(scrollLog, BorderLayout.AFTER_LAST_LINE);
-
         JPanel panelBotones = new JPanel(new GridLayout(6, 1, 10, 10));
         panelBotones.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panelBotones.setBackground(new Color(38, 35, 62));
 
-        btnAtacar               = new JButton("ATACAR");
-        btnCambiarModo          = new JButton("CAMBIAR MODO");
-        btnPasar                = new JButton("PASAR TURNO");
-        JButton btnGuardar      = new JButton("GUARDAR PARTIDA");
-        JButton btnCargar       = new JButton("CARGAR PARTIDA");
-        JButton btnEstadisticas = new JButton("ESTADÍSTICAS");
-
-        btnAtacar.setFont(new Font("Arial", Font.BOLD, 14));
-        btnCambiarModo.setFont(new Font("Arial", Font.BOLD, 14));
-        btnPasar.setFont(new Font("Arial", Font.BOLD, 14));
-        btnGuardar.setFont(new Font("Arial", Font.BOLD, 14));
-        btnCargar.setFont(new Font("Arial", Font.BOLD, 14));
-        btnEstadisticas.setFont(new Font("Arial", Font.BOLD, 14));
-
-        btnAtacar.setBackground(new Color(255, 200, 200));
-        btnCambiarModo.setBackground(new Color(200, 255, 200));
-        btnPasar.setBackground(new Color(255, 255, 200));
-        btnGuardar.setBackground(new Color(180, 255, 220));
-        btnCargar.setBackground(new Color(220, 180, 255));
-        btnEstadisticas.setBackground(new Color(255, 220, 150));
+        btnAtacar               = boton3D("ATACAR",           new Color(210, 100, 100));
+        btnCambiarModo          = boton3D("CAMBIAR MODO",     new Color(90,  180, 120));
+        btnPasar                = boton3D("PASAR TURNO",      new Color(210, 200,  80));
+        JButton btnGuardar      = boton3D("GUARDAR PARTIDA",  new Color(80,  185, 160));
+        JButton btnCargar       = boton3D("CARGAR PARTIDA",   new Color(160, 110, 210));
+        JButton btnEstadisticas = boton3D("ESTADÍSTICAS",     new Color(215, 165,  60));
 
         btnAtacar.addActionListener(e -> accionAtacar());
         btnCambiarModo.addActionListener(e -> accionCambiarModo());

@@ -319,7 +319,7 @@ public class JuegoControlador {
         }
         int[] resultado = new int[cantidad];
         for (int i = 0; i < cantidad; i++) {
-            int idx = vistas.get(0).pedirEleccion(
+            int idx = vistas.get(vistas.size() - 1).pedirEleccion(
                 "Elige sacrificio " + (i + 1) + " de " + cantidad, opciones);
             if (idx < 0) return null;
             resultado[i] = idx;
